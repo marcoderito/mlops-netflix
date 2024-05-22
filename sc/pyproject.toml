@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "mlops-netflix"
+version = "0.0.1"
+description = "A movie recommandation system based on Netflix dataset made for the UniTs Machine Learning Operations course"
+authors = ["Marco Del Rito <>, Stefano Cattonar <stefano.cattonar@outlook.com>"] #manca la mail di Marco
+license = "Apache2" #?
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+flet = "^0.22.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
