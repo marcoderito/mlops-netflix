@@ -1,9 +1,24 @@
+import flet
 import flet as ft
+from flet_core import DismissibleDismissEvent, DismissDirection
 
 
 def main(page):
+    def handle_dismiss(e: DismissibleDismissEvent):
+        #safeArea.controls.remove(e.control)
+        print(e.direction.value.__str__())
+        #if e.direction.value == DismissDirection.START_TO_END:
+        if e.direction.value.__str__() == "startToEnd":
+            print("Dismissed to right -> like!")
+            page.add(newSafeArea)
+        else:
+            print("Dismissed to left -> dislike!")
+        page.update()
 
     page.adaptive = True
+
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
     page.appbar = ft.AppBar(
         leading=ft.TextButton("New", style=ft.ButtonStyle(padding=0)),
@@ -16,16 +31,17 @@ def main(page):
 
     page.navigation_bar = ft.NavigationBar(
         destinations=[
-            ft.NavigationDestination(icon=ft.icons.EXPLORE, label="Explore"),
+            #we should try to have here "CircleAvatar"...
+            ft.NavigationDestination(icon=ft.icons.EXPLORE, label="You"),
             ft.NavigationDestination(
                 icon=ft.icons.FAVORITE_BORDER_OUTLINED,
                 selected_icon=ft.icons.FAVORITE_OUTLINED,
-                #label="Commute"
+                label="Impression"
             ),
             ft.NavigationDestination(
                 icon=ft.icons.GRID_VIEW,
                 selected_icon=ft.icons.GRID_VIEW_ROUNDED,
-                #label="Bookmark",
+                label="Gallery",
             ),
         ],
         border=ft.Border(
@@ -33,24 +49,56 @@ def main(page):
         ),
     )
 
+    newSafeArea = ft.SafeArea(
+        minimum=flet.Padding(20, 20, 20, 50),
+        content = ft.Dismissible
+        (
+            content=ft.Card
+            (
+            width=400,
+            content=ft.Container
+                (
+                content=ft.Image
+                    (
+                    src=f"/imagetest.png",
+                    fit=ft.ImageFit.FILL,
+                ),
+                padding=ft.Padding(20, 20, 20, 20),
+                alignment=ft.alignment.center
+                ),
+            ),
+            on_dismiss=handle_dismiss
+        )
+    )
+
     page.add(
-        ft.SafeArea(
-            ft.Column(
-                [
-                    ft.Checkbox(value=False, label="Dark Mode"),
-                    ft.Text("First field:"),
-                    ft.TextField(keyboard_type=ft.KeyboardType.TEXT),
-                    ft.Text("Second field:"),
-                    ft.TextField(keyboard_type=ft.KeyboardType.TEXT),
-                    ft.Switch(label="A switch"),
-                    ft.FilledButton(content=ft.Text("Adaptive button")),
-                    ft.Text("Text line 1"),
-                    ft.Text("Text line 2"),
-                    ft.Text("Text line 3"),
-                ]
+        safeArea := ft.SafeArea
+            (
+            minimum=flet.Padding(20, 20, 20, 50),
+            content=ft.Dismissible
+                (
+                content=ft.Card
+                    (
+                    width=400,
+                    content=ft.Container
+                        (
+                        content=ft.Image
+                            (
+                            src=f"/imagetest.png",
+                            fit=ft.ImageFit.FILL,
+                        ),
+                        padding=ft.Padding(20, 20, 20, 20),
+                        alignment=ft.alignment.center
+                    ),
+                ),
+                on_dismiss=handle_dismiss
             )
+
         )
     )
 
 
-ft.app(target=main)
+flet.app(
+    target=main,
+    assets_dir="assets"
+)
