@@ -9,6 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 flet = "^0.22.1"
+faker = "^25.4.0"
 
 
 [build-system]
