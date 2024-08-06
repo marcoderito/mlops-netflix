@@ -95,7 +95,7 @@ class User:
     def __get_seen_show(self):
         return set(self.movie_rating_data_frame[self.movie_rating_data_frame['user_id'] == self.username]['show_id'])
 
-    def me_page(self, navigationBar: ft.NavigationBar) -> ft.View:
+    def me_page(self, on_logout, navigationBar: ft.NavigationBar) -> ft.View:
         return ft.View(
             route="/me",
             controls=[
@@ -135,6 +135,28 @@ class User:
                                 adaptive=True,
                                 alignment=ft.MainAxisAlignment.CENTER
                             ),
+                            ft.FilledTonalButton(
+                                text="FilledTonalButton",
+                                adaptive=True,
+                                style=ft.ButtonStyle(
+                                    bgcolor=ft.colors.RED_900
+                                ),
+                                on_click=on_logout()
+                            ),
+                            ft.FilledButton(
+                                text="FilledButton",
+                                adaptive=True,
+                                style=ft.ButtonStyle(
+                                    bgcolor=ft.colors.RED_900
+                                ),
+                                on_click=on_logout()
+                            ),
+                            ft.ElevatedButton(text="ElevatedButton",
+                                adaptive=True,
+                                style=ft.ButtonStyle(
+                                    bgcolor=ft.colors.RED_900
+                                ),
+                                on_click=on_logout())
                         ],
                         adaptive=True,
                         horizontal_alignment=ft.CrossAxisAlignment.CENTER
