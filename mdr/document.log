@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.8.24)  26 AUG 2024 18:32
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (MiKTeX 24.4) (preloaded format=pdflatex 2024.8.24)  27 AUG 2024 16:10
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1104,7 +1104,7 @@ Missing character: There is no º in font lmsy9!
 
 
 <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/GenreDistribu
-tion.png, id=112, 1422.81563pt x 818.05624pt>
+tion.png, id=108, 1422.81563pt x 818.05624pt>
 File: C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/GenreDis
 tribution.png Graphic file (type png)
 <use C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/GenreDist
@@ -1128,7 +1128,7 @@ Underfull \vbox (badness 10000) has occurred while \output is active []
 [2.2{C:/Program Files/MiKTeX/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Program Files
 /MiKTeX/fonts/enc/dvips/lm/lm-rm.enc}]
 <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/PairPlotNumer
-icVariables.png, id=131, 569.12625pt x 603.75563pt>
+icVariables.png, id=127, 569.12625pt x 603.75563pt>
 File: C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/PairPlot
 NumericVariables.png Graphic file (type png)
 <use C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/PairPlotN
@@ -1145,7 +1145,7 @@ Overfull \hbox (12.0pt too wide) in paragraph at lines 100--101
 Class acmart Warning: A possible image without description on input line 103.
 
 <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/RatingDistrib
-ution.png, id=132, 1436.9685pt x 976.8495pt>
+ution.png, id=128, 1436.9685pt x 976.8495pt>
 File: C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/RatingDi
 stribution.png Graphic file (type png)
 <use C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/RatingDis
@@ -1164,7 +1164,7 @@ Class acmart Warning: A possible image without description on input line 111.
 
 
 <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/Classificatio
-nReport.png, id=133, 1106.33325pt x 1010.5755pt>
+nReport.png, id=129, 1106.33325pt x 1010.5755pt>
 File: C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/Classifi
 cationReport.png Graphic file (type png)
 <use C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/Classific
@@ -1190,7 +1190,7 @@ tribution.png> <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plot
 s/PairPlotNumericVariables.png> <C:/Users/marco/OneDrive/Documents/GitHub/mlops
 -netflix/mdr/plots/RatingDistribution.png>]
 <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/ConfusionMatr
-ix.png, id=144, 543.83176pt x 476.982pt>
+ix.png, id=140, 543.83176pt x 476.982pt>
 File: C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/Confusio
 nMatrix.png Graphic file (type png)
 <use C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/Confusion
@@ -1207,7 +1207,7 @@ Overfull \hbox (12.0pt too wide) in paragraph at lines 133--134
 Class acmart Warning: A possible image without description on input line 136.
 
 <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/RocCurve.png,
- id=145, 359.84438pt x 294.09875pt>
+ id=141, 359.84438pt x 294.09875pt>
 File: C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/RocCurve
 .png Graphic file (type png)
 <use C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/RocCurve.
@@ -1226,7 +1226,7 @@ Class acmart Warning: A possible image without description on input line 144.
 
 
 <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/PrecisionReca
-llCurve.png, id=146, 360.34625pt x 295.60437pt>
+llCurve.png, id=142, 360.34625pt x 295.60437pt>
 File: C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/Precisio
 nRecallCurve.png Graphic file (type png)
 <use C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/Precision
@@ -1252,7 +1252,7 @@ cationReport.png> <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/p
 lots/ConfusionMatrix.png> <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netfl
 ix/mdr/plots/RocCurve.png>]
 <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/FeatureImport
-ance.png, id=157, 1029.8475pt x 843.75224pt>
+ance.png, id=153, 1029.8475pt x 843.75224pt>
 File: C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/FeatureI
 mportance.png Graphic file (type png)
 <use C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/FeatureIm
@@ -1277,22 +1277,19 @@ Underfull \vbox (badness 1072) has occurred while \output is active []
 
 [5.5 <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/plots/Precisio
 nRecallCurve.png> <C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix/mdr/p
-lots/FeatureImportance.png>] (document.bbl
-Overfull \hbox (2.68976pt too wide) in paragraph at lines 193--4
+lots/FeatureImportance.png>]
+Overfull \hbox (2.68976pt too wide) in paragraph at lines 193--195
 \T1/lmr/m/n/9 (-20) www . kaggle . com / datasets / rahulvyasm / net^^]ix -[] m
 ovies -[] and -[] tv -[]
  []
 
 
-Package natbib Warning: Empty `thebibliography' environment on input line 40.
-
-)
-Underfull \hbox (badness 1715) in paragraph at lines 197--198
+Underfull \hbox (badness 1715) in paragraph at lines 196--197
 []\T1/lmr/m/n/7 (+20) Rahul Vyas. Net-flix Movies and TV Shows Dataset. Re-
  []
 
 
-Underfull \hbox (badness 5302) in paragraph at lines 197--198
+Underfull \hbox (badness 5302) in paragraph at lines 196--197
 \T1/lmr/m/n/7 (+20) trieved from []$https : / / www . kaggle . com / datasets /
  rahulvyasm /
  []
@@ -1303,7 +1300,7 @@ Underfull \vbox (badness 3281) has occurred while \output is active []
 
 
 
-Underfull \hbox (badness 7451) in paragraph at lines 198--199
+Underfull \hbox (badness 7451) in paragraph at lines 197--198
 []\T1/lmr/m/n/7 (+20) Rishit Javia. Net-flix Movie Rat-ing Dataset. Re-trieved
  []
 
@@ -1330,13 +1327,13 @@ LaTeX2e <2024-06-01> patch level 2
 L3 programming layer <2024-07-20>
  ***********
 Package rerunfilecheck Info: File `document.out' has not changed.
-(rerunfilecheck)             Checksum: 16EA62C0C1C8FE3F6E2239B453E0BF29;3147.
+(rerunfilecheck)             Checksum: 25D66CD0E17B1CD607BD61316ACF218E;3051.
  ) 
 Here is how much of TeX's memory you used:
- 21164 strings out of 473899
- 337269 string characters out of 5736315
- 1953960 words of memory out of 5000000
- 43206 multiletter control sequences out of 15000+600000
+ 21146 strings out of 473899
+ 337002 string characters out of 5736315
+ 1952960 words of memory out of 5000000
+ 43193 multiletter control sequences out of 15000+600000
  659827 words of font info for 215 fonts, out of 8000000 for 9000
  1302 hyphenation exceptions out of 8191
  90i,12n,131p,1007b,604s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1351,9 +1348,9 @@ ic/lm/lmss8.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmssbx10.pfb><C:
 /Program Files/MiKTeX/fonts/type1/public/lm/lmsy9.pfb><C:/Program Files/MiKTeX/
 fonts/type1/public/lm/lmtt9.pfb><C:/Program Files/MiKTeX/fonts/type1/public/new
 tx/txmiaX.pfb>
-Output written on document.pdf (6 pages, 1119024 bytes).
+Output written on document.pdf (6 pages, 1118424 bytes).
 PDF statistics:
- 246 PDF objects out of 1000 (max. 8388607)
- 50 named destinations out of 1000 (max. 500000)
- 49881 words of extra memory for PDF output out of 51595 (max. 10000000)
+ 240 PDF objects out of 1000 (max. 8388607)
+ 48 named destinations out of 1000 (max. 500000)
+ 49873 words of extra memory for PDF output out of 51595 (max. 10000000)
 

@@ -2,7 +2,6 @@ import os
 import json
 from sklearn.cluster import KMeans
 from sklearn.neighbors import NearestNeighbors
-from sklearn.linear_model import LinearRegression
 from sklearn.metrics import silhouette_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
@@ -11,13 +10,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from imblearn.over_sampling import SMOTE
 import numpy as np
 from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score, precision_recall_curve, average_precision_score, classification_report
-#from sklearn.model_selection import learning_curve, validation_curve
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
-#from sklearn.decomposition import PCA
-
 
 def check_age():
     age = int(input("Inserisci la tua età: "))
@@ -212,14 +208,44 @@ def load_and_cluster_shows(input_file, output_file):
 
 # Funzione per ottenere uno show iniziale
 def get_initial_show(popularity_dict, seen_shows, df, user_profile=None):
+    # Identificare il tipo di dato degli show_id nel DataFrame
+    show_id_type = df['show_id'].dtype
+    # Esporta il DataFrame in un file CSV
+
+    # Primo ciclo per controllare e selezionare gli show
     for show_id, popularity in sorted(popularity_dict.items(), key=lambda x: x[1], reverse=True):
+        # Convertire show_id al tipo corretto
+        if show_id_type in ['int64', 'int32']:
+            show_id = int(show_id)
+        elif show_id_type == 'float64':
+            show_id = float(show_id)
+        elif show_id_type == 'str':
+            show_id = str(show_id).strip()
+        else:
+            print(f"Tipo di dato non supportato: {show_id_type}")
+
+
+    # Secondo ciclo per ulteriori controlli e selezione
+    for show_id, popularity in sorted(popularity_dict.items(), key=lambda x: x[1], reverse=True):
+        # Convertire show_id al tipo corretto nel secondo ciclo
+        if show_id_type == 'int64':
+            show_id = int(show_id)
+        elif show_id_type == 'float64':
+            show_id = float(show_id)
+        elif show_id_type == 'str':
+            show_id = str(show_id).strip()
+
         if show_id not in seen_shows and show_id in df['show_id'].values:
+            print(f"show_id: {show_id}")
             return show_id
+
     if user_profile:
         selected_show = select_show_based_on_profile(user_profile, seen_shows, df)
         if selected_show:
+            print(f"selected_show1: {selected_show}")
             return selected_show
     selected_show = select_heterogeneous_show(seen_shows, df)
+    print(f"selected_show2: {selected_show}")
     return selected_show
 
 def select_show_based_on_profile(user_profile, seen_shows, df):
@@ -255,17 +281,21 @@ def update_popularity(popularity_file, show_id):
             popularity_dict = {}
     else:
         popularity_dict = {}
+
     # Converti show_id in stringa per garantire la compatibilità con JSON
-    show_id_str = str(show_id)
+    show_id = str(show_id)
 
-    if show_id_str in popularity_dict:
-        popularity_dict[show_id_str] += 1
+    if show_id in popularity_dict:
+        popularity_dict[show_id] += 1
     else:
-        popularity_dict[show_id_str] = 1
+        popularity_dict[show_id] = 1
 
-    # Scrivi i dati aggiornati nel file JSON
+    # Ordina il dizionario in base alla popolarità in ordine decrescente
+    sorted_popularity = dict(sorted(popularity_dict.items(), key=lambda item: item[1], reverse=True))
+
+    # Scrivi i dati ordinati nel file JSON
     with open(popularity_file, 'w') as file:
-        json.dump(popularity_dict, file)
+        json.dump(sorted_popularity, file, indent=4)
 
 
 def load_and_initialize_reviews(predefined_file, ratings_file):
@@ -344,9 +374,6 @@ def rate_shows(user_id, df, popularity_file):
     ratings = []
     seen_shows = set()
     count = 0
-    if os.path.exists(popularity_file):
-        print(f"Dimensione del file {popularity_file}: {os.path.getsize(popularity_file)} bytes")
-
     if os.path.exists(popularity_file) and os.path.getsize(popularity_file) > 0:
         try:
             with open(popularity_file, 'r') as file:
@@ -357,6 +384,7 @@ def rate_shows(user_id, df, popularity_file):
         popularity_dict = {}
     while count < 10:
         show_id = get_initial_show(popularity_dict, seen_shows, df)
+        print(f"show_id: {show_id}")
         if show_id is None:
             print("Non ci sono show abbastanza valutati per determinare un profilo2. Per favore, valuta altri show.")
             break
@@ -518,28 +546,6 @@ def get_profile_name(profile_id, df):
     profile_counts = df[df['profile'] == profile_id]['listed_in'].value_counts()
     profile_name = profile_counts.idxmax() if not profile_counts.empty else "Unknown Profile"
     return profile_name
-
-
-# Funzione per predire la popolarità usando regressione
-def predict_popularity(df, popularity_file):
-    if not os.path.exists(popularity_file):
-        return {}
-    with open(popularity_file, 'r') as file:
-        popularity_dict = json.load(file)
-    X = []
-    y = []
-    for show_id, popularity in popularity_dict.items():
-        if show_id in df['show_id'].values:
-            show_data = df[df['show_id'] == show_id].iloc[0]
-            X.append([show_data['duration'], show_data['release_year']])
-            y.append(popularity)
-    if X:
-        X = pd.DataFrame(X, columns=['duration', 'release_year'])
-        reg = LinearRegression()
-        reg.fit(X, y)
-        predictions = reg.predict(X)
-        return {show_id: pred for show_id, pred in zip(popularity_dict.keys(), predictions)}
-    return popularity_dict
 
 
 # Funzione per preparare i dati per Nearest Neighbors
@@ -708,7 +714,7 @@ def main():
     df = load_and_cluster_shows(netflix_titles_file, clustered_file)
 
     # Esecuzione dell'analisi esplorativa e statistica dei dati con output in PDF
-    analyze_and_save_to_pdf(df, ratings_file, 'data_analysis.pdf')
+    #analyze_and_save_to_pdf(df, ratings_file, 'data_analysis.pdf')
 
     # Inizializza le recensioni da predefined_reviews.csv
     ratings_df = load_and_initialize_reviews(predefined_reviews_file, ratings_file)
