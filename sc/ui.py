@@ -232,7 +232,32 @@ secret_key = "MY_APP_SECRET_KEY"  # os.getenv("MY_APP_SECRET_KEY")
 
 
 def main(page: ft.Page):
-    machine_learning_utils.initialize_popularity(page)
+    #TODO: check if here we already need the dataframe
+    # Caricamento e pre-processamento dei dati
+    movie_list_dataframe: pandas.DataFrame = machine_learning_utils.load_and_cluster_shows("assets/netflix_titles.csv", "assets/clustered_netflix_titles.csv")
+
+    # Inizializza le recensioni da predefined_reviews.csv
+    movie_ratings_dataframe = machine_learning_utils.load_and_initialize_reviews()
+
+    #TODO: probably useless
+    # Esecuzione dell'analisi esplorativa e statistica dei dati con output in PDF
+    #machine_learning_utils.analyze_and_save_to_pdf(movie_list_dataframe)
+    # Creazione dei profili da ratings.csv e clustered_netflix_titles.csv
+    machine_learning_utils.create_profiles(movie_ratings_dataframe, movie_list_dataframe)
+
+    # Separare i dati per allenamento e test
+    X_train, X_test, y_train, y_test, tfidf_vectorizer = machine_learning_utils.split_training_test(movie_ratings_dataframe, movie_list_dataframe)
+    # Allenare il modello
+    model = machine_learning_utils.train_model(X_train, y_train)
+
+    # Testare il modello
+    y_pred = model.predict(X_test)
+    y_pred_proba = model.predict_proba(X_test)[:, 1]
+    print("Inizio generate")
+    machine_learning_utils.generate_evaluation_report(y_test, y_pred, y_pred_proba, model, X_train, y_train, tfidf_vectorizer)
+    print("Fine generate")
+
+    machine_learning_utils.get_popularity(page)
     dismissible_ref = ft.Ref[ft.Dismissible]()
     page.scroll = ft.ScrollMode.AUTO
     global user
@@ -365,7 +390,7 @@ def main(page: ft.Page):
             page.go("/")
         if route.route == "/":
             if user is not None:
-                page.views.append(like.return_like_page(handle_dismiss, handle_click, dismissible_ref, navigationBar, user))
+                page.views.append(like.return_like_page(handle_dismiss, handle_click, dismissible_ref, navigationBar, user, page))
             else:
                 page.go("/login")
         if page.route == "/me":

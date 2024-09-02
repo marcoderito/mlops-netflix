@@ -32,6 +32,7 @@ class User:
         page.client_storage.set(f"{self.username}.profile", profile)
 
     def determine_profile(self) -> str:
+        #TODO: usare il determine_profile di machine_learning_utils
         like_shows = self.movie_rating_data_frame.loc[
             (self.movie_rating_data_frame['user_id'] == self.username) & (
                         self.movie_rating_data_frame['rating'] == 'like'), 'show_id'].tolist()
@@ -44,7 +45,7 @@ class User:
         return profile_id.__str__()
 
     def __get_profile(self, page: ft.Page):
-        return self.determine_profile()
+        return self.determine_profile() #machine_learning_utils.determine_profile(self.username, self.movie_rating_data_frame, self.movie_list_data_frame) #
         '''profile = page.client_storage.get(f"{self.username}.profile")
         if profile is None or profile == "" or profile == "No profile assigned yet": #TODO: delete No profile bla bla
             profile = "Unknown Profile"

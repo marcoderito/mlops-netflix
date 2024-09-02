@@ -6,7 +6,6 @@ def getOAuthProvider() -> OAuthProvider:
     return OAuthProvider(
         client_id=os.getenv("CLIENT_ID"),
         client_secret=os.getenv("CLIENT_SECRET"),
-
         authorization_endpoint=os.getenv("AUTH_URL"),
         token_endpoint=os.getenv("TOKEN_URL"),
         user_endpoint=os.getenv("USER_URL"),

@@ -28,7 +28,7 @@ def get_poster(movie_title: str, release_year: str) -> str:
     file_name: str = movie_title.replace(" ", "_") + ".jpg"
     file_path = f"{assets_path}{poster_folder}{file_name}"
     if os.path.exists(file_path):
-        print(f"./{poster_folder}{file_name}")
+        #print(f"./{poster_folder}{file_name}")
         return f"./{poster_folder}{file_name}"
 
     config: json = json.loads(__get_config())

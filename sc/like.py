@@ -77,7 +77,8 @@ def create_dismissible(handle_dismiss, movie_id: str, movie_title: str, movie_re
                     ft.Container(
                         content=ft.Image(
                             src=movie_db_utils.get_poster(movie_title, movie_release_year),
-                            fit=ft.ImageFit.FILL,
+                            fit=ft.ImageFit.FIT_HEIGHT,#ft.ImageFit.FILL,
+                            height=300
                         ),
                         padding=ft.Padding(20, 20, 20, 20),
                     )
@@ -91,33 +92,31 @@ def create_dismissible(handle_dismiss, movie_id: str, movie_title: str, movie_re
 
 
 #TODO: we need a better name here
-def post_profile_page(handle_dismiss, handle_click, dismissible_ref: ft.Ref, navigationBar: ft.NavigationBar, user: user.User) -> ft.View:
+def post_profile_page(handle_dismiss, handle_click, dismissible_ref: ft.Ref, navigationBar: ft.NavigationBar, user: user.User, page: ft.Page) -> ft.View:
     grid_view: ft.GridView = ft.GridView(expand=True, runs_count=2, child_aspect_ratio=1)
     print(f"seen_show: {user.seen_show}")
     i: int = 0
-    for index, row in user.movie_list_data_frame.iterrows():
-        #print(f"i: {i}")
-        #print(f"row: {row["show_id"]}")
-        if row["show_id"] in user.seen_show:
-            continue
-        else:
-            movie_id = row["show_id"]
-            movie_title = row["title"]
-            movie_release_year = row["release_year"]
-            grid_view.controls.append(
-                ft.Column(
-                    controls=[
-                        create_dismissible(handle_dismiss, movie_id, movie_title, movie_release_year, dismissible_ref, user),
-                        create_rating_row(handle_click)
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                )
+    #for index, row in user.movie_list_data_frame.iterrows():
+    show_ids: list = []
+    while i < 10:
+        show_id = machine_learning_utils.get_show(machine_learning_utils.get_popularity(page), user.seen_show, user.movie_list_data_frame, user.profile, show_ids)
+        show_ids.append(show_id)
+        movie = user.movie_list_data_frame[user.movie_list_data_frame['show_id'] == show_id].iloc[0]
+        movie_id = movie["show_id"]
+        movie_title = movie["title"]
+        movie_release_year = movie["release_year"]
+        grid_view.controls.append(
+            ft.Column(
+                controls=[
+                    create_dismissible(handle_dismiss, movie_id, movie_title, movie_release_year, dismissible_ref, user),
+                    create_rating_row(handle_click)
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             )
-            if i >= 9:
-                break
-            i += 1
-    i = 0
+        )
+        i += 1
+    i = 0 #with the for this was usefull... so better safe then sorry
     return (
         ft.View
         ("/gallery",
@@ -147,18 +146,23 @@ def post_profile_page(handle_dismiss, handle_click, dismissible_ref: ft.Ref, nav
 
 #TODO: we need a better name here
 def base_like_page(handle_dismiss, handle_click, dismissible_ref: ft.Ref, navigationBar: ft.NavigationBar,
-                   user: user.User) -> ft.View:
+                   user: user.User, page: ft.Page) -> ft.View:
     movie_id = ""
     movie_title = ""
     movie_release_year = ""
-    for index, row in user.movie_list_data_frame.iterrows():
-        if row["show_id"] in user.seen_show:
-            continue
-        else:
-            movie_id = row["show_id"]
-            movie_title = row["title"]
-            movie_release_year = row["release_year"]
-            break
+    show_id = machine_learning_utils.get_show(machine_learning_utils.get_popularity(page=page), seen_shows=user.seen_show, movie_list_dataframe=user.movie_list_data_frame, user_profile=user.profile)
+    movie = user.movie_list_data_frame[user.movie_list_data_frame['show_id'] == show_id].iloc[0]
+    movie_id = movie["show_id"]
+    movie_title = movie["title"]
+    movie_release_year = movie["release_year"]
+    # for index, row in user.movie_list_data_frame.iterrows():
+    #     if row["show_id"] in user.seen_show:
+    #         continue
+    #     else:
+    #         movie_id = row["show_id"]
+    #         movie_title = row["title"]
+    #         movie_release_year = row["release_year"]
+    #         break
     return ft.View(
         "/",
         [ft.SafeArea
@@ -184,9 +188,9 @@ def base_like_page(handle_dismiss, handle_click, dismissible_ref: ft.Ref, naviga
 
 
 def return_like_page(handle_dismiss, handle_click, dismissible_ref: ft.Ref, navigationBar: ft.NavigationBar,
-                     user: user.User) -> ft.View:
+                     user: user.User, page) -> ft.View:
     if user.movie_rating_data_frame.__len__() < 10:
-        return base_like_page(handle_dismiss, handle_click, dismissible_ref, navigationBar, user)
+        return base_like_page(handle_dismiss, handle_click, dismissible_ref, navigationBar, user, page)
     else:
         user.reset_seen_show()
-        return post_profile_page(handle_dismiss, handle_click, dismissible_ref, navigationBar, user)
+        return post_profile_page(handle_dismiss, handle_click, dismissible_ref, navigationBar, user, page)
