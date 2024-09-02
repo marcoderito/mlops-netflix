@@ -1,1 +1,1 @@
-# mlops-netfliix
+# mlops-netflix
