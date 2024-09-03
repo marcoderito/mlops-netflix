@@ -1,0 +1,185 @@
+\documentclass{beamer}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+
+\title{Analysis and Evaluation of Machine Learning Operations on a Show Recommendation System}
+\author{Marco De Rito -- Data Engineer}
+\institute{Università degli Studi di Trieste}
+\date{\today}
+
+\begin{document}
+	
+	\frame{\titlepage}
+	
+	\begin{frame}{Introduction}
+		\textbf{Objective:} Develop a recommendation system for a streaming platform using machine learning techniques.
+		\begin{itemize}
+			\item Personalized user profiles based on viewing habits.
+			\item Segmenting the catalogue into distinct clusters.
+			\item Enhance user satisfaction by providing relevant content.
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Data and Preprocessing}
+		\textbf{Datasets:}
+		\begin{itemize}
+			\item \textit{Netflix Movies and TV Shows} (Kaggle)
+			\item User ratings integrated from additional sources.
+		\end{itemize}
+		\textbf{Preprocessing Steps:}
+		\begin{itemize}
+			\item Handling missing data.
+			\item Textual data transformation using TF-IDF:
+			\[
+			\text{TF-IDF}(t, d) = \text{TF}(t, d) \times \text{IDF}(t)
+			\]
+		\end{itemize}
+	\end{frame}
+	
+		\begin{frame}{Visualization of Data and Results}
+		\textbf{Genre Distribution:}
+		\begin{figure}
+			\centering
+			\includegraphics[width=0.5\textwidth]{C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix-branch1/mdr/plots/GenreDistribution.png}
+			\caption{Genre Distribution}
+		\end{figure}
+	\end{frame}
+	
+	\begin{frame}{Visualization of Data and Results}
+		\textbf{Pairplot of Numerical Variables:}
+		\begin{figure}
+			\centering
+			\includegraphics[width=0.5\textwidth]{C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix-branch1/mdr/plots/PairPlotNumericVariables.png}
+			\caption{Pairplot of Numerical Variables}
+		\end{figure}
+	\end{frame}
+	
+	\begin{frame}{Visualization of Data and Results}
+		\textbf{Like/Dislike Distribution:}
+		\begin{figure}
+			\centering
+			\includegraphics[width=0.5\textwidth]{C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix-branch1/mdr/plots/RatingDistribution.png}
+			\caption{Like/Dislike Distribution}
+		\end{figure}
+	\end{frame}
+	
+	\begin{frame}{Analysis of Statistical Results}
+		\textbf{Model Accuracy:} 82\%
+		\begin{itemize}
+			\item \textbf{Confusion Matrix:}
+			\item \textbf{Classification Report:}
+			\item \textbf{ROC Curve:}
+			\item \textbf{Precision-Recall Curve:}
+			\item \textbf{Feature Importance:}
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Model Training and Testing}
+		\textbf{Data Splitting:}
+		\begin{itemize}
+			\item 80\% Training, 20\% Testing
+		\end{itemize}
+		\textbf{Class Imbalance Handling:}
+		\begin{itemize}
+			\item SMOTE for oversampling minority class.
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Clustering Using K-Means}
+		\textbf{K-Means Algorithm:}
+		\begin{itemize}
+			\item Partitioning data into $k$ clusters.
+			\item Optimization based on Euclidean distance.
+			\item Silhouette Score for determining optimal $k$:
+			\[
+			\text{Silhouette Score} = \frac{b - a}{\max(a, b)}
+			\]
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Random Forest Classifier for Recommendation}
+		\textbf{Random Forest Overview:}
+		\begin{itemize}
+			\item Ensemble method using decision trees.
+			\item Voting mechanism for final output.
+			\item Robustness against overfitting.
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}{Evaluation Metrics: Confusion Matrix}
+		\textbf{Confusion Matrix:}
+		\begin{figure}
+			\centering
+			\includegraphics[width=0.4\textwidth]{C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix-branch1/mdr/plots/ConfusionMatrix.png}
+			\caption{Confusion Matrix}
+		\end{figure}
+		\textbf{Explanation:} The confusion matrix provides a summary of prediction results on the classification problem. The number of correct and incorrect predictions are summarized with count values and broken down by each class.
+	\end{frame}
+	
+	\begin{frame}{Evaluation Metrics: Classification Report}
+		\textbf{Classification Report:}
+		\begin{itemize}
+			\item Precision ($P$): \( P = \frac{TP}{TP + FP} \)
+			\item Recall ($R$): \( R = \frac{TP}{TP + FN} \)
+			\item F1-Score: \( F1 = 2 \cdot \frac{P \cdot R}{P + R} \)
+		\end{itemize}
+		\begin{figure}
+			\centering
+			\includegraphics[width=0.35\textwidth]{C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix-branch1/mdr/plots/ClassificationReport.png}
+			\caption{Classification Report}
+		\end{figure}
+		\textbf{Explanation:} This report shows the main classification metrics: precision, recall, and F1-score for each class, helping to assess the performance of the classifier.
+	\end{frame}
+	
+	\begin{frame}{Evaluation Metrics: ROC Curve and AUC}
+		\textbf{ROC Curve and AUC:}
+		\begin{itemize}
+			\item ROC Curve: Plot of True Positive Rate (TPR) vs. False Positive Rate (FPR).
+			\item AUC (Area Under the Curve): Measures overall performance. AUC closer to 1 indicates better performance.
+		\end{itemize}
+		\begin{figure}
+			\centering
+			\includegraphics[width=0.4\textwidth]{C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix-branch1/mdr/plots/RocCurve.png}
+			\caption{ROC Curve with AUC = 0.90}
+		\end{figure}
+		\textbf{Explanation:} The ROC curve is a graphical plot that illustrates the diagnostic ability of a binary classifier. The AUC is a single number summary of the model performance.
+	\end{frame}
+	
+	\begin{frame}{Evaluation Metrics: Precision-Recall Curve}
+		\textbf{Precision-Recall Curve:}
+		\begin{figure}
+			\centering
+			\includegraphics[width=0.4\textwidth]{C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix-branch1/mdr/plots/PrecisionRecallCurve.png}
+			\caption{Precision-Recall Curve with AP = 0.87}
+		\end{figure}
+		\textbf{Explanation:} The precision-recall curve is a useful tool for understanding the tradeoff between precision and recall for different threshold settings of the classifier.
+	\end{frame}
+	
+	\begin{frame}{Evaluation Metrics: Feature Importance}
+		\textbf{Feature Importance:}
+		\begin{figure}
+			\centering
+			\includegraphics[width=0.4\textwidth]{C:/Users/marco/OneDrive/Documents/GitHub/mlops-netflix-branch1/mdr/plots/FeatureImportance.png}
+			\caption{Feature Importance Analysis}
+		\end{figure}
+		\textbf{Explanation:} Feature importance scores highlight which features are most influential in predicting the target variable. This helps in understanding the model’s decision process.
+	\end{frame}
+	
+
+	
+	\begin{frame}{Discussion and Conclusion}
+		\textbf{Key Takeaways:}
+		\begin{itemize}
+			\item K-Means and Random Forest effectively segment and recommend.
+			\item High accuracy with good generalization.
+		\end{itemize}
+		\textbf{Limitations:}
+		\begin{itemize}
+			\item Potential "filter bubble" effect.
+		\end{itemize}
+	\end{frame}
+	
+
+	
+\end{document}

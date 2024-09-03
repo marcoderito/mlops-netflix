@@ -4,19 +4,25 @@ from sklearn.cluster import KMeans
 from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics import silhouette_score
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from imblearn.over_sampling import SMOTE
 import numpy as np
-from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score, precision_recall_curve, average_precision_score, classification_report
+from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score, precision_recall_curve, \
+    classification_report, average_precision_score
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
+
 def check_age():
-    age = int(input("Inserisci la tua età: "))
+    """
+    Checks the user's age and returns the appropriate content rating category.
+
+    :return: Content rating based on age ('G', 'PG', 'PG-13', 'R')
+    """
+    age = int(input("Enter your age: "))
     if age < 18:
         return 'G'
     elif age < 21:
@@ -28,6 +34,13 @@ def check_age():
 
 
 def analyze_and_save_to_pdf(df, ratings_file, output_file='data_analysis.pdf'):
+    """
+    Performs exploratory data analysis and saves the results to a PDF file.
+
+    :param df: DataFrame containing the show data
+    :param ratings_file: Path to the ratings CSV file
+    :param output_file: Path to the output PDF file for saving analysis results
+    """
     with PdfPages(output_file) as pdf:
         # Descriptive Statistics
         summary_stats = df.describe(include='all')
@@ -115,65 +128,79 @@ def analyze_and_save_to_pdf(df, ratings_file, output_file='data_analysis.pdf'):
         plt.close()
 
 
-
-# Funzione per caricare e clusterizzare gli show
-
 def preprocess_data(df):
-    # Considerare solo le prime 12 colonne
+    """
+    Preprocesses the DataFrame by selecting the first 12 columns and removing unwanted columns.
+
+    :param df: DataFrame containing the show data
+    :return: Preprocessed DataFrame
+    """
+    # Consider only the first 12 columns
     df = df.iloc[:, :12]
 
-    # Rimuovere colonne indesiderate
+    # Remove unwanted columns
     columns_to_drop = [col for col in df.columns if 'Unnamed' in col]
     df = df.drop(columns=columns_to_drop)
 
-    # Conta le righe prima dell'eliminazione
-    rows_before = df.shape[0]
-
-    # Eliminare righe con almeno un valore mancante in qualsiasi colonna
+    # Remove rows with at least one missing value in any column
     df = df.dropna().copy()
-
-    # Conta le righe dopo l'eliminazione
-    rows_after = df.shape[0]
-
-    # Calcola quanti righe sono state eliminate
-    rows_deleted = rows_before - rows_after
-
     return df
 
+
 def create_tfidf_vectorizer(df):
-    # Rimuove la colonna 'show_id'
+    """
+    Creates and fits a TF-IDF vectorizer on the combined textual data of the DataFrame.
+
+    :param df: DataFrame containing the show data
+    :return: Fitted TfidfVectorizer object
+    """
+    # Remove the 'show_id' column
     df = df.drop(columns=['show_id'])
 
-    # Riempie i valori NaN e combina tutte le variabili rilevanti in un unico campo
+    # Fill NaN values and combine all relevant variables into a single field
     df.fillna('', inplace=True)
-    df['combined_text'] = df.apply(lambda row: ' '.join(row.values.astype(str)), axis=1)
+    df.loc[:, 'combined_text'] = df.apply(lambda row: ' '.join(row.values.astype(str)), axis=1)
 
-    # Sostituisce le virgole e altri separatori con spazi
-    df['combined_text'] = df['combined_text'].str.replace(',', ' ').str.replace(';', ' ')
+    # Replace commas and other separators with spaces
+    df.loc[:, 'combined_text'] = df['combined_text'].str.replace(',', ' ').str.replace(';', ' ')
 
     tfidf_vectorizer = TfidfVectorizer(stop_words='english')
     tfidf_vectorizer.fit(df['combined_text'])
 
     return tfidf_vectorizer
 
+
 def transform_features(df, tfidf_vectorizer):
-    # Rimuove la colonna 'show_id'
+    """
+    Transforms the features of the DataFrame using the provided TF-IDF vectorizer.
+
+    :param df: DataFrame containing the show data
+    :param tfidf_vectorizer: Fitted TfidfVectorizer object
+    :return: Transformed TF-IDF matrix
+    """
+    # Remove the 'show_id' column
     df = df.drop(columns=['show_id'])
 
-    # Riempie i valori NaN e combina tutte le variabili rilevanti in un unico campo
+    # Fill NaN values and combine all relevant variables into a single field
     df.fillna('', inplace=True)
-    df['combined_text'] = df.apply(lambda row: ' '.join(row.values.astype(str)), axis=1)
+    df.loc[:, 'combined_text'] = df.apply(lambda row: ' '.join(row.values.astype(str)), axis=1)
 
-    # Sostituisce le virgole e altri separatori con spazi
-    df['combined_text'] = df['combined_text'].str.replace(',', ' ').str.replace(';', ' ')
+    # Replace commas and other separators with spaces
+    df.loc[:, 'combined_text'] = df['combined_text'].str.replace(',', ' ').str.replace(';', ' ')
 
     tfidf_matrix = tfidf_vectorizer.transform(df['combined_text'])
 
     return tfidf_matrix
 
 
-
 def optimal_kmeans(data, max_k=10):
+    """
+    Finds the optimal number of clusters (k) for KMeans clustering using the silhouette score.
+
+    :param data: Data to be clustered
+    :param max_k: Maximum number of clusters to test
+    :return: Optimal number of clusters
+    """
     scores = []
     for k in range(2, max_k + 1):
         kmeans = KMeans(n_clusters=k, random_state=42)
@@ -184,16 +211,14 @@ def optimal_kmeans(data, max_k=10):
     return best_k
 
 
-
 def load_and_cluster_shows(input_file, output_file):
     """
-    Carica i dati degli show e li clusterizza.
+    Loads show data from a CSV file, preprocesses it, and performs KMeans clustering.
 
-    :param input_file: Percorso del file CSV di input
-    :param output_file: Percorso del file CSV di output
-    :return: DataFrame clusterizzato
+    :param input_file: Path to the input CSV file containing show data
+    :param output_file: Path to the output CSV file to save clustered data
+    :return: Clustered DataFrame
     """
-
     df = pd.read_csv(input_file, encoding='ISO-8859-1')
     df['show_id'] = df['show_id'].str.replace('s', '').astype(int)
     df = preprocess_data(df)
@@ -204,31 +229,25 @@ def load_and_cluster_shows(input_file, output_file):
     df['profile'] = kmeans.fit_predict(features_scaled)
     df.to_csv(output_file, index=False)
     return df
-# TODO: controllare se dentro kmeans ci sono gli id
 
-# Funzione per ottenere uno show iniziale
+
 def get_initial_show(popularity_dict, seen_shows, df, user_profile=None):
-    # Identificare il tipo di dato degli show_id nel DataFrame
+    """
+    Retrieves an initial show for a user based on popularity and profile.
+
+    :param popularity_dict: Dictionary containing show popularity data
+    :param seen_shows: Set of shows already watched by the user
+    :param df: DataFrame containing the show data
+    :param user_profile: User's profile (optional)
+    :return: Selected show ID
+    """
+    # Identify the data type of show_id in the DataFrame
     show_id_type = df['show_id'].dtype
-    # Esporta il DataFrame in un file CSV
 
-    # Primo ciclo per controllare e selezionare gli show
+    # Second loop for further checks and selection
     for show_id, popularity in sorted(popularity_dict.items(), key=lambda x: x[1], reverse=True):
-        # Convertire show_id al tipo corretto
+        # Convert show_id to the correct type in the second loop
         if show_id_type in ['int64', 'int32']:
-            show_id = int(show_id)
-        elif show_id_type == 'float64':
-            show_id = float(show_id)
-        elif show_id_type == 'str':
-            show_id = str(show_id).strip()
-        else:
-            print(f"Tipo di dato non supportato: {show_id_type}")
-
-
-    # Secondo ciclo per ulteriori controlli e selezione
-    for show_id, popularity in sorted(popularity_dict.items(), key=lambda x: x[1], reverse=True):
-        # Convertire show_id al tipo corretto nel secondo ciclo
-        if show_id_type == 'int64':
             show_id = int(show_id)
         elif show_id_type == 'float64':
             show_id = float(show_id)
@@ -236,7 +255,6 @@ def get_initial_show(popularity_dict, seen_shows, df, user_profile=None):
             show_id = str(show_id).strip()
 
         if show_id not in seen_shows and show_id in df['show_id'].values:
-            print(f"show_id: {show_id}")
             return show_id
 
     if user_profile:
@@ -248,7 +266,16 @@ def get_initial_show(popularity_dict, seen_shows, df, user_profile=None):
     print(f"selected_show2: {selected_show}")
     return selected_show
 
+
 def select_show_based_on_profile(user_profile, seen_shows, df):
+    """
+    Selects a show based on the user's profile.
+
+    :param user_profile: User's profile
+    :param seen_shows: Set of shows already watched by the user
+    :param df: DataFrame containing the show data
+    :return: Selected show ID or None if no suitable show is found
+    """
     profile_shows = df[df['profile'] == user_profile]
     available_shows = [show_id for show_id in profile_shows['show_id'] if show_id not in seen_shows]
     if available_shows:
@@ -258,6 +285,13 @@ def select_show_based_on_profile(user_profile, seen_shows, df):
 
 
 def select_heterogeneous_show(seen_shows, df):
+    """
+    Selects a show based on genre distribution to provide variety.
+
+    :param seen_shows: Set of shows already watched by the user
+    :param df: DataFrame containing the show data
+    :return: Selected show ID or None if no suitable show is found
+    """
     genre_counts = df['listed_in'].value_counts()
     if not genre_counts.empty:
         genre = genre_counts.idxmax()
@@ -268,10 +302,13 @@ def select_heterogeneous_show(seen_shows, df):
     return None
 
 
-# Funzione per aggiornare la popolarità degli show
 def update_popularity(popularity_file, show_id):
-    if os.path.exists(popularity_file):
-        print(f"Dimensione del file {popularity_file}: {os.path.getsize(popularity_file)} bytes")
+    """
+    Updates the popularity count of a show in the popularity file.
+
+    :param popularity_file: Path to the JSON file containing popularity data
+    :param show_id: ID of the show to update
+    """
 
     if os.path.exists(popularity_file) and os.path.getsize(popularity_file) > 0:
         try:
@@ -282,7 +319,7 @@ def update_popularity(popularity_file, show_id):
     else:
         popularity_dict = {}
 
-    # Converti show_id in stringa per garantire la compatibilità con JSON
+    # Convert show_id to string for compatibility with JSON
     show_id = str(show_id)
 
     if show_id in popularity_dict:
@@ -290,32 +327,44 @@ def update_popularity(popularity_file, show_id):
     else:
         popularity_dict[show_id] = 1
 
-    # Ordina il dizionario in base alla popolarità in ordine decrescente
+    # Sort the dictionary by popularity in descending order
     sorted_popularity = dict(sorted(popularity_dict.items(), key=lambda item: item[1], reverse=True))
 
-    # Scrivi i dati ordinati nel file JSON
+    # Write the sorted data to the JSON file
     with open(popularity_file, 'w') as file:
         json.dump(sorted_popularity, file, indent=4)
 
 
 def load_and_initialize_reviews(predefined_file, ratings_file):
+    """
+    Loads predefined reviews from a CSV file and initializes the ratings file.
+
+    :param predefined_file: Path to the predefined reviews CSV file
+    :param ratings_file: Path to the output ratings CSV file
+    :return: DataFrame of predefined reviews
+    """
     if os.path.exists(predefined_file):
         predefined_df = pd.read_csv(predefined_file, encoding='ISO-8859-1')
-        # Rimuovere il prefisso 's' e convertire show_id in numerico
+        # Remove the 's' prefix and convert show_id to numeric
         predefined_df['show_id'] = predefined_df['show_id'].str.replace('s', '').astype(int)
-        # Converti tutti i valori della colonna 'rating' in minuscolo
+        # Convert all values in the 'rating' column to lowercase
         predefined_df['rating'] = predefined_df['rating'].str.lower().map({'like': 1, 'dislike': 0})
         predefined_df['show_id'] = predefined_df['show_id'].astype(str)
-        # Filtra solo le recensioni 'like' e 'dislike'
+        # Filter only 'like' and 'dislike' reviews
         predefined_df = predefined_df[predefined_df['rating'].notna()]
         predefined_df[['user_id', 'show_id', 'rating']].to_csv(ratings_file, index=False)
     else:
-        raise FileNotFoundError(f"Il file {predefined_file} non esiste.")
+        raise FileNotFoundError(f"The file {predefined_file} does not exist.")
 
     return predefined_df
+
+
 def is_file_empty(file_path):
     """
-    Verifica se un file CSV contiene dati effettivi oltre alle intestazioni.
+    Checks if a CSV file contains actual data beyond the headers.
+
+    :param file_path: Path to the CSV file
+    :return: True if the file is empty or only contains headers, False otherwise
     """
     if not os.path.exists(file_path):
         return True
@@ -323,8 +372,18 @@ def is_file_empty(file_path):
     with open(file_path, 'r') as file:
         lines = file.readlines()
         return len(lines) <= 1
+
+
 def split_training_test(ratings_df, df, test_size=0.2):
-    # Rimuovere il prefisso 's' e convertire show_id in numerico
+    """
+    Splits the data into training and testing sets, including oversampling with SMOTE.
+
+    :param ratings_df: DataFrame of user ratings
+    :param df: DataFrame containing the show data
+    :param test_size: Proportion of the data to include in the test split
+    :return: Training and testing sets for features and labels, fitted TfidfVectorizer
+    """
+    # Remove the 's' prefix and convert show_id to numeric
     ratings_df['show_id'] = ratings_df['show_id'].str.replace('s', '').astype(int)
     ratings_df = ratings_df.dropna(subset=['rating'])
     ratings_df['rating'] = ratings_df['rating'].astype(float)
@@ -332,45 +391,70 @@ def split_training_test(ratings_df, df, test_size=0.2):
     df['show_id'] = df['show_id'].astype(int)
     df_ratings = ratings_df[['show_id', 'rating']].reset_index(drop=True)
 
-    # Creazione del TfidfVectorizer utilizzando i dati
+    # Create TfidfVectorizer using the data
     tfidf_vectorizer = create_tfidf_vectorizer(df)
 
-    # Trasformazione delle caratteristiche usando il TfidfVectorizer creato
+    # Transform features using the created TfidfVectorizer
     tfidf_matrix = transform_features(df, tfidf_vectorizer)
 
-    # Aggiungi le valutazioni al dataframe trasformato
+    # Add ratings to the transformed dataframe
     df_encoded = pd.DataFrame(tfidf_matrix.toarray(), columns=tfidf_vectorizer.get_feature_names_out())
     df_encoded = pd.concat([df[['show_id']].reset_index(drop=True), df_encoded], axis=1)
     df_encoded = df_encoded.merge(df_ratings, on='show_id', how='left')
 
-    # Verifica e riempi eventuali valori NaN rimanenti
+    # Check and fill any remaining NaN values
     df_encoded.fillna(0, inplace=True)
 
-    # Separare le variabili dipendenti e indipendenti
+    # Separate dependent and independent variables
     X = df_encoded.drop(columns=['show_id', 'rating']).values
     y = df_encoded['rating'].values
 
-    # Integrazione con SMOTE
+    # Integration with SMOTE
     smote = SMOTE(random_state=42)
     X_res, y_res = smote.fit_resample(X, y)
 
-    # Split dei dati in training e test
+    # Split data into training and test sets
     X_train, X_test, y_train, y_test = train_test_split(X_res, y_res, test_size=test_size, random_state=42)
 
     return X_train, X_test, y_train, y_test, tfidf_vectorizer
+
+
 def train_model(X_train, y_train):
+    """
+    Trains a RandomForest model on the training data.
+
+    :param X_train: Training feature data
+    :param y_train: Training labels
+    :return: Trained RandomForestClassifier model
+    """
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
     return model
+
+
 def test_model(X_test, y_test, model):
+    """
+    Tests the trained model on the test data and prints the classification report.
+
+    :param X_test: Test feature data
+    :param y_test: Test labels
+    :param model: Trained RandomForestClassifier model
+    """
     y_pred = model.predict(X_test)
     report = classification_report(y_test, y_pred)
     print(report)
 
 
-# Funzione per valutare gli show
 def rate_shows(user_id, df, popularity_file):
-    print("Inizia la valutazione degli show")
+    """
+    Allows a user to rate shows, updating the popularity file and returning the ratings.
+
+    :param user_id: ID of the user providing ratings
+    :param df: DataFrame containing the show data
+    :param popularity_file: Path to the popularity JSON file
+    :return: List of ratings provided by the user
+    """
+    print("Start rating shows")
     ratings = []
     seen_shows = set()
     count = 0
@@ -384,15 +468,13 @@ def rate_shows(user_id, df, popularity_file):
         popularity_dict = {}
     while count < 10:
         show_id = get_initial_show(popularity_dict, seen_shows, df)
-        print(f"show_id: {show_id}")
         if show_id is None:
-            print("Non ci sono show abbastanza valutati per determinare un profilo2. Per favore, valuta altri show.")
+            print("There aren't enough rated shows to determine a profile. Please rate more shows.")
             break
         show = df[df['show_id'] == show_id].iloc[0]
-        print(f"Titolo: {show['title']}")
-        print(f"Descrizione: {show['description']}")
-        print(f"Profilo: {show['profile']}")
-        rating = input("Valuta lo show (like/dislike/skip): ").strip().lower()
+        print(f"Title: {show['title']}")
+        print(f"Description: {show['description']}")
+        rating = input("Rate the show (like/dislike/skip): ").strip().lower()
         if rating in ['like', 'dislike']:
             ratings.append((user_id, show['show_id'], rating))
             seen_shows.add(show['show_id'])
@@ -403,72 +485,95 @@ def rate_shows(user_id, df, popularity_file):
     return ratings
 
 
-# Funzione per determinare il profilo dell'utente
 def determine_profile(user_id, ratings, df):
-    ratings.loc[:, 'show_id'] = ratings['show_id'].astype(np.int32)
+    """
+    Determines the user's profile based on their ratings and show data using a Random Forest model.
 
-    # Preprocessing dei dati: combinare tutte le colonne testuali in una singola colonna di testo
-    df['combined_text'] = df[['type', 'title', 'director', 'cast', 'country', 'date_added', 'release_year', 'rating', 'duration', 'listed_in', 'description']].astype(str).apply(' '.join, axis=1)
-    ratings_df = pd.DataFrame(ratings, columns=['user_id', 'show_id', 'rating'])
-    ratings_df = ratings_df.merge(df[['show_id', 'combined_text']],
-                                  on='show_id', how='inner')
+    :param user_id: ID of the user
+    :param ratings: DataFrame of the user's ratings
+    :param df: DataFrame containing the show data
+    :return: Determined user profile
+    """
+    # Filter the user's ratings
+    user_ratings = ratings[ratings['user_id'] == int(user_id)]
 
-    # Trasformazione delle caratteristiche testuali usando TfidfVectorizer
+    if user_ratings.empty:
+        return "Default Profile"
+
+    # Ensure the 'show_id' column is of the same type in both DataFrames
+    df.loc[:, 'show_id'] = df['show_id'].astype(np.int32)
+    user_ratings.loc[:, 'show_id'] = user_ratings['show_id'].astype(np.int32)
+
+    # Combine the text of the rated shows
+    df.loc[:, 'combined_text'] = df[
+        ['type', 'title', 'director', 'cast', 'country', 'date_added', 'release_year', 'rating', 'duration',
+         'listed_in', 'description']].astype(str).apply(' '.join, axis=1)
+
+    # Merge the rated show IDs with their respective combined texts
+    ratings_df = user_ratings.merge(df[['show_id', 'combined_text', 'profile']], on='show_id', how='inner')
+
+    if ratings_df.empty:
+        return "Default Profile"
+
+    # TF-IDF transformation
     tfidf_vectorizer = TfidfVectorizer(stop_words='english')
     tfidf_matrix = tfidf_vectorizer.fit_transform(ratings_df['combined_text'])
 
-    # Encoding della colonna 'profile'
-    label_encoder = LabelEncoder()
-    ratings_df['profile'] = label_encoder.fit_transform(ratings_df['combined_text'])
-
-    # Variabili indipendenti (X) e dipendenti (y)
+    # Independent variables (X) and dependent variables (y)
     X = tfidf_matrix.toarray()
     y = ratings_df['profile'].values
 
-    # Addestramento del modello di classificazione
+    # Train the Random Forest model
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X, y)
 
-    # Predizione del profilo dell'utente
-    user_ratings = ratings_df[ratings_df['user_id'] == int(user_id)]
-    user_tfidf_matrix = tfidf_vectorizer.transform(user_ratings['combined_text'])
+    # Predict the user's profile
+    user_tfidf_matrix = tfidf_vectorizer.transform(ratings_df['combined_text'])
     user_X = user_tfidf_matrix.toarray()
 
     if user_X.size == 0:
-        return label_encoder.inverse_transform([np.bincount(y).argmax()])[0]
+        return "Default Profile"
 
-    # Predizione dei profili usando il modello addestrato
+    # Predict profiles using the trained model
     predicted_profiles = model.predict(user_X)
     final_profile_encoded = np.bincount(predicted_profiles).argmax()
-    final_profile = label_encoder.inverse_transform([final_profile_encoded])[0]
+    final_profile = ratings_df['profile'].iloc[final_profile_encoded]
 
     return final_profile
 
-# Funzione per suggerire show in base al profilo
+
 def suggest_shows(df, profile, seen_shows):
     """
-    Suggerisce show all'utente in base al suo profilo e agli show visti.
+    Suggests shows to the user based on their profile and watched shows.
 
-    :param df: DataFrame degli show con colonne ['show_id', 'profile', 'listed_in', 'duration', 'release_year']
-    :param profile: Profilo dell'utente
-    :param seen_shows: Set di show già visti dall'utente
-    :return: DataFrame dei suggerimenti di show
+    :param df: DataFrame of shows with columns ['show_id', 'profile', 'listed_in', 'duration', 'release_year']
+    :param profile: User's profile
+    :param seen_shows: Set of shows already watched by the user
+    :return: DataFrame of show suggestions
     """
-    # Suggerisci show basati sul profilo dell'utente
+    # Suggest shows based on the user's profile
     if not seen_shows:
         suggestions = df[df['profile'] == profile]
     else:
         suggestions = df[(df['profile'] == profile) & (~df['show_id'].isin(seen_shows))]
 
     if suggestions.empty:
-        # Se non ci sono ulteriori show nel profilo, suggerisci da altri profili
+        # If no more shows are available in the profile, suggest from other profiles
         suggestions = df[~df['show_id'].isin(seen_shows)]
 
     return suggestions.head(10)
 
 
-# Funzione per la valutazione continua degli show
-def continuous_rating(user_id, df, ratings_df, ratings_file, profiles_file, predefined_df):
+def continuous_rating(user_id, df, ratings_df, ratings_file, profiles_file):
+    """
+    Allows a user to continuously rate shows, updating their profile and suggestions.
+
+    :param user_id: ID of the user
+    :param df: DataFrame containing the show data
+    :param ratings_df: DataFrame of user ratings
+    :param ratings_file: Path to the ratings CSV file
+    :param profiles_file: Path to the profiles CSV file
+    """
     seen_shows = set(ratings_df[ratings_df['user_id'] == int(user_id)]['show_id'])
     dislike_count = 0
     dislike_threshold = 5
@@ -476,7 +581,7 @@ def continuous_rating(user_id, df, ratings_df, ratings_file, profiles_file, pred
     while True:
         user_profile = determine_profile(user_id, ratings_df, df)
         if user_profile == "Default Profile":
-            print("Non ci sono show abbastanza valutati per determinare un profilo. Per favore, valuta altri show.")
+            print("There aren't enough rated shows to determine a profile. Please rate more shows.")
             user_ratings = rate_shows(user_id, df, 'popularity.json')
             if not user_ratings:
                 break
@@ -485,23 +590,23 @@ def continuous_rating(user_id, df, ratings_df, ratings_file, profiles_file, pred
             ratings_df.to_csv(ratings_file, index=False)
             create_profiles(ratings_df, df, profiles_file)
         else:
-            print(f"Il profilo attuale dell'utente è: {get_profile_name(user_profile, df)}")
+            print(f"The user's current profile is: {user_profile}")
             if dislike_count >= dislike_threshold:
-                print("Suggerendo show da altri profili a causa dei dislike consecutivi.")
+                print("Suggesting shows from other profiles due to consecutive dislikes.")
                 suggested_shows = suggest_shows_from_other_profiles(df, user_profile, seen_shows)
                 dislike_count = 0
             else:
                 suggested_shows = suggest_shows(df, user_profile, seen_shows)
 
             if suggested_shows.empty:
-                print("Non ci sono show da suggerire.")
+                print("There are no shows to suggest.")
                 break
 
             for _, show in suggested_shows.iterrows():
-                print(f"Titolo: {show['title']}")
-                print(f"Descrizione: {show['description']}")
-                print(f"Profilo: {show['profile']}")
-                rating = input("Valuta lo show (like/dislike/skip): ").strip().lower()
+                print(f"Title: {show['title']}")
+                print(f"Description: {show['description']}")
+                print(f"Profile: {show['profile']}")
+                rating = input("Rate the show (like/dislike/skip): ").strip().lower()
                 if rating in ['like', 'dislike']:
                     new_rating = pd.DataFrame({'user_id': [user_id], 'show_id': [show['show_id']], 'rating': [rating]})
                     ratings_df = pd.concat([ratings_df, new_rating], ignore_index=True)
@@ -518,14 +623,27 @@ def continuous_rating(user_id, df, ratings_df, ratings_file, profiles_file, pred
                     seen_shows.add(show['show_id'])
 
 
-
-
 def suggest_shows_from_other_profiles(df, current_profile, seen_shows):
+    """
+    Suggests shows from profiles different from the user's current profile.
+
+    :param df: DataFrame of shows with columns ['show_id', 'profile', 'listed_in', 'duration', 'release_year']
+    :param current_profile: User's current profile
+    :param seen_shows: Set of shows already watched by the user
+    :return: DataFrame of show suggestions
+    """
     suggestions = df[(df['profile'] != current_profile) & (~df['show_id'].isin(seen_shows))]
     return suggestions.head(10)
 
 
 def update_user_profile(user_id, profile, profiles_file):
+    """
+    Updates the user's profile in the profiles file.
+
+    :param user_id: ID of the user
+    :param profile: User's new profile
+    :param profiles_file: Path to the profiles CSV file
+    """
     if os.path.exists(profiles_file):
         profiles_df = pd.read_csv(profiles_file)
     else:
@@ -538,48 +656,77 @@ def update_user_profile(user_id, profile, profiles_file):
 
 
 def update_show_profile(df, show_id, profile, clustered_file):
+    """
+    Updates the profile of a show in the clustered DataFrame and saves it.
+
+    :param df: DataFrame containing the show data
+    :param show_id: ID of the show to update
+    :param profile: New profile to assign to the show
+    :param clustered_file: Path to the clustered CSV file
+    """
     df.loc[df['show_id'] == show_id, 'profile'] = profile
     df.to_csv(clustered_file, index=False)
 
 
-def get_profile_name(profile_id, df):
-    profile_counts = df[df['profile'] == profile_id]['listed_in'].value_counts()
-    profile_name = profile_counts.idxmax() if not profile_counts.empty else "Unknown Profile"
-    return profile_name
-
-
-# Funzione per preparare i dati per Nearest Neighbors
 def prepare_neighbors_data(ratings_df):
-    # Convertiamo le valutazioni in un formato di matrice
+    """
+    Prepares the user-item matrix for Nearest Neighbors algorithm.
+
+    :param ratings_df: DataFrame of user ratings
+    :return: User-item matrix
+    """
+    # Convert ratings into a matrix format
     user_item_matrix = ratings_df.pivot(index='user_id', columns='show_id', values='rating').fillna(0)
     return user_item_matrix
 
 
 def save_reviews(df, file_path):
+    """
+    Saves the DataFrame of reviews to a CSV file.
+
+    :param df: DataFrame containing the reviews
+    :param file_path: Path to the output CSV file
+    """
     df.to_csv(file_path, index=False)
 
+
 def load_predefined_reviews(file_path):
-    # Carica il dataset predefinito
+    """
+    Loads predefined reviews from a CSV file and encodes the ratings.
+
+    :param file_path: Path to the predefined reviews CSV file
+    :return: DataFrame of predefined reviews
+    """
+    # Load the predefined dataset
     predefined_df = pd.read_csv(file_path)
 
-    # Codifica delle valutazioni (1 per like, 0 per dislike)
+    # Encode ratings (1 for like, 0 for dislike)
     predefined_df['rating'] = predefined_df['rating'].str.lower().map({'like': 1, 'dislike': 0})
 
     return predefined_df
 
-# Funzione per suggerire show usando Nearest Neighbors
+
 def suggest_shows_with_neighbors(user_id, df, ratings_df, n_neighbors=5):
+    """
+    Suggests shows to the user using the Nearest Neighbors algorithm.
+
+    :param user_id: ID of the user
+    :param df: DataFrame containing the show data
+    :param ratings_df: DataFrame of user ratings
+    :param n_neighbors: Number of neighbors to consider for suggestions
+    :return: List of suggested shows
+    """
     user_item_matrix = prepare_neighbors_data(ratings_df)
     model_knn = NearestNeighbors(metric='cosine', algorithm='brute')
     model_knn.fit(user_item_matrix.values)
 
-    # Trova l'indice dell'utente
+    # Find the user's index
     user_index = list(user_item_matrix.index).index(user_id)
 
-    # Ottieni i vicini più vicini per l'utente
+    # Get the nearest neighbors for the user
     distances, indices = model_knn.kneighbors([user_item_matrix.iloc[user_index]], n_neighbors=n_neighbors + 1)
 
-    # Trova i suggerimenti basati sui vicini
+    # Find suggestions based on neighbors
     suggestions = []
     for i in range(1, len(distances.flatten())):
         suggested_show_id = user_item_matrix.columns[indices.flatten()[i]]
@@ -591,44 +738,58 @@ def suggest_shows_with_neighbors(user_id, df, ratings_df, n_neighbors=5):
 
 
 def filter_by_rating(df, rating):
+    """
+    Filters the DataFrame by the user's content rating.
+
+    :param df: DataFrame containing the show data
+    :param rating: Content rating to filter by ('G', 'PG', 'PG-13', 'R')
+    :return: Filtered DataFrame
+    """
     rating_mapping = {'G': ['G'], 'PG': ['G', 'PG'], 'PG-13': ['G', 'PG', 'PG-13'], 'R': ['G', 'PG', 'PG-13', 'R']}
     return df[df['rating'].isin(rating_mapping[rating])]
 
 
 def create_profiles(ratings_df, df, profiles_file):
     """
-    Crea un file che associa gli utenti ai loro profili in base alle recensioni date.
+    Creates a file associating users with their profiles based on reviews.
 
-    :param ratings_df: DataFrame delle recensioni con colonne ['user_id', 'show_id', 'rating']
-    :param df: DataFrame degli show con colonne ['show_id', 'profile', 'listed_in', 'duration', 'release_year']
-    :param profiles_file: Percorso del file dove salvare i profili degli utenti
+    :param ratings_df: DataFrame of reviews with columns ['user_id', 'show_id', 'rating']
+    :param df: DataFrame of shows with columns ['show_id', 'profile', 'listed_in', 'duration', 'release_year']
+    :param profiles_file: Path to the file where user profiles will be saved
     """
-
-    # Elenco per memorizzare i profili utente
+    # List to store user profiles
     user_profiles = []
 
-    # Trova profilo per ogni utente unico
+    # Find profile for each unique user
     for user_id in ratings_df['user_id'].unique():
-        # Filtra le recensioni dell'utente corrente
+        # Filter reviews for the current user
         user_ratings = ratings_df[ratings_df['user_id'] == user_id]
-        # Determina il profilo dell'utente usando la funzione determine_profile
+        # Determine the profile of the user using the determine_profile function
 
         user_profile = determine_profile(user_id, user_ratings, df)
 
-        # Aggiungi alla lista il profilo determinato
+        # Add the determined profile to the list
         user_profiles.append({'user_id': user_id, 'profile': user_profile})
 
-    # Crea un DataFrame dai profili utente
+    # Create a DataFrame from user profiles
     profiles_df = pd.DataFrame(user_profiles)
 
-
-
-    # Salva i profili degli utenti in un file CSV
+    # Save user profiles to a CSV file
     profiles_df.to_csv(profiles_file, index=False)
 
 
-def generate_evaluation_report(y_test, y_pred, y_pred_proba, model, X_train, y_train, tfidf_vectorizer,
+def generate_evaluation_report(y_test, y_pred, y_pred_proba, model, tfidf_vectorizer,
                                output_file='evaluation_report.pdf'):
+    """
+    Generates a PDF report containing the evaluation metrics and visualizations for the model.
+
+    :param y_test: True labels for the test data
+    :param y_pred: Predicted labels for the test data
+    :param y_pred_proba: Predicted probabilities for the test data
+    :param model: Trained RandomForestClassifier model
+    :param tfidf_vectorizer: Fitted TfidfVectorizer object
+    :param output_file: Path to the output PDF file for saving the report
+    """
     with PdfPages(output_file) as pdf:
         # Confusion Matrix
         plt.figure(figsize=(10, 8))
@@ -688,21 +849,22 @@ def generate_evaluation_report(y_test, y_pred, y_pred_proba, model, X_train, y_t
 
 def is_existing_user(user_id, profiles_file):
     """
-    Verifica se l'utente esiste nel file dei profili.
+    Checks if the user exists in the profiles file.
 
-    :param user_id: ID dell'utente
-    :param profiles_file: Percorso del file dei profili
-    :return: True se l'utente esiste, False altrimenti
+    :param user_id: ID of the user
+    :param profiles_file: Path to the profiles file
+    :return: True if the user exists, False otherwise
     """
     if os.path.exists(profiles_file):
         profiles_df = pd.read_csv(profiles_file)
         return user_id in profiles_df['user_id'].values
     return False
 
-# Funzione principale
+
 def main():
-
-
+    """
+    Main function to execute the workflow of loading data, training the model, and interacting with the user.
+    """
     # File paths
     netflix_titles_file = 'netflix_titles.csv'
     predefined_reviews_file = 'predefined_reviews.csv'
@@ -710,45 +872,46 @@ def main():
     clustered_file = 'clustered_netflix_titles.csv'
     profiles_file = 'profiles.csv'
 
-    # Caricamento e pre-processamento dei dati
+    # Load and preprocess data
     df = load_and_cluster_shows(netflix_titles_file, clustered_file)
 
-    # Esecuzione dell'analisi esplorativa e statistica dei dati con output in PDF
-    #analyze_and_save_to_pdf(df, ratings_file, 'data_analysis.pdf')
+    # Perform exploratory and statistical analysis with PDF output
+    # analyze_and_save_to_pdf(df, ratings_file, 'data_analysis.pdf')
 
-    # Inizializza le recensioni da predefined_reviews.csv
+    # Initialize reviews from predefined_reviews.csv
     ratings_df = load_and_initialize_reviews(predefined_reviews_file, ratings_file)
 
-    # Creazione dei profili da ratings.csv e clustered_netflix_titles.csv
+    # Create profiles from ratings.csv and clustered_netflix_titles.csv
     create_profiles(ratings_df, df, profiles_file)
 
-    # Separare i dati per allenamento e test
+    # Separate data for training and testing
     X_train, X_test, y_train, y_test, tfidf_vectorizer = split_training_test(ratings_df, df)
 
-
-    # Allenare il modello
+    # Train the model
     model = train_model(X_train, y_train)
 
-    # Testare il modello
+    # Test the model
     test_model(X_test, y_test, model)
-    # Testare il modello
+
+    # Generate evaluation report
     y_pred = model.predict(X_test)
     y_pred_proba = model.predict_proba(X_test)[:, 1]
-    print("Inizio generate")
-    generate_evaluation_report(y_test, y_pred, y_pred_proba, model, X_train, y_train, tfidf_vectorizer)
-    print("Fine generate")
-    # Interazione con l'utente
-    user_id = int(input("Inserisci il tuo ID utente: "))
+    print("Starting evaluation report generation")
+    generate_evaluation_report(y_test, y_pred, y_pred_proba, model, tfidf_vectorizer)
+    print("Evaluation report generation completed")
+
+    # User interaction
+    user_id = int(input("Enter your user ID: "))
     age_rating = check_age()
 
     if is_existing_user(user_id, profiles_file):
-        print(f"Utente esistente trovato con ID: {user_id}")
-        # Continua la valutazione con raccomandazione
+        print(f"Existing user found with ID: {user_id}")
+        # Continue rating with recommendations
         filtered_df = filter_by_rating(df, age_rating)
-        continuous_rating(user_id, filtered_df, ratings_df, ratings_file, profiles_file, ratings_df)
+        continuous_rating(user_id, filtered_df, ratings_df, ratings_file, profiles_file)
     else:
-        print(f"Nuovo utente con ID: {user_id}")
-        # Profilazione iniziale del nuovo utente
+        print(f"New user with ID: {user_id}")
+        # Initial profiling of the new user
         filtered_df = filter_by_rating(df, age_rating)
         initial_ratings = rate_shows(user_id, filtered_df, 'popularity.json')
         if initial_ratings:
@@ -756,9 +919,11 @@ def main():
             ratings_df = pd.concat([ratings_df, new_ratings_df], ignore_index=True)
             ratings_df.to_csv(ratings_file, index=False)
             create_profiles(ratings_df, df, profiles_file)
-            print("Profilo creato per il nuovo utente.")
+            print("Profile created for the new user.")
+            # Continue with further ratings
+            continuous_rating(user_id, filtered_df, ratings_df, ratings_file, profiles_file)
         else:
-            print("Nessuna valutazione fornita per il nuovo utente.")
+            print("No ratings provided for the new user.")
 
 
 if __name__ == "__main__":
